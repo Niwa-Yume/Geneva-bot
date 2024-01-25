@@ -563,7 +563,14 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     )
 
     return ConversationHandler.END
-
+#Permet d'avoir plus d'information
+async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    """Cancels and ends the conversation."""
+    user = update.message.from_user
+    await update.message.reply_text(
+        "Salut ! Voici les infos supplémentaire qu'on a pour toi :\n /transport pour avoir des infos sur les TPG autour de toi ou à un arret précis\n /start pour discuter avec moi et voir ou tu peux aller ce soir !", reply_markup=ReplyKeyboardRemove()
+    )
+    return ConversationHandler.END
 
 #FONCTION BOT DE TRANSPORT
 def appeler_opendata(path):
@@ -633,7 +640,9 @@ def main() -> None:
         #La commande qui permet de lancer le chat si vous n'avez pas déjà entamer la conversation
         entry_points=[
             CommandHandler("start", start),
-            CommandHandler("transport", transport)
+            CommandHandler("transport", transport),
+            CommandHandler("cancel", cancel),
+            CommandHandler("help", help)
         ],
         states={
             STATE_typeSorti: [
