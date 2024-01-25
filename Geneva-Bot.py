@@ -568,7 +568,7 @@ async def help(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     """Cancels and ends the conversation."""
     user = update.message.from_user
     await update.message.reply_text(
-        "Salut ! Voici les infos supplémentaire qu'on a pour toi :\n /transport pour avoir des infos sur les TPG autour de toi ou à un arret précis\n /start pour discuter avec moi et voir ou tu peux aller ce soir !", reply_markup=ReplyKeyboardRemove()
+        "Salut ! Voici les infos supplémentaire qu'on a pour toi :\n\n /transport pour avoir des infos sur les TPG autour de toi ou à un arret précis\n\n  /start pour discuter avec moi et voir ou tu peux aller ce soir !", reply_markup=ReplyKeyboardRemove()
     )
     return ConversationHandler.END
 
