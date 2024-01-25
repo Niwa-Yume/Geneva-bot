@@ -2,8 +2,9 @@ import logging
 import math
 import sys
 import time
-
 import requests
+from apiai import apiai
+from pandas._libs import json
 from telegram import ReplyKeyboardMarkup, Update, ReplyKeyboardRemove
 from telegram.ext import (
     Application,
@@ -12,6 +13,7 @@ from telegram.ext import (
     ConversationHandler,
     MessageHandler,
     filters,
+    Updater,
 )
 #Permet d'aller chercher le token dans le fichier du même dossiers
 token = sys.argv[1]
@@ -25,7 +27,7 @@ logging.getLogger("httpx").setLevel(logging.WARNING)
 
 logger = logging.getLogger(__name__)
 
-STATE_typeSorti, STATE_SortiChoix, STATE_SortiDetails, STATE_RestoChoix, STATE_INFO_RESTO,STATE_RestoDetails,STATE_transport = range(7)
+STATE_typeSorti, STATE_SortiChoix, STATE_SortiDetails, STATE_RestoChoix, STATE_INFO_RESTO,STATE_RestoDetails,STATE_transport,botai = range(8)
 
 #FONCTION DE LANCEMENT
 
@@ -39,7 +41,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     #le message de réponse
 
     await update.message.reply_text(
-        "Bonjour ! Je suis NoctiBot mon but est de t'aider.\n "
+        "Bonjour ! 👍 Je suis NoctiBot mon but est de t'aider.\n "
         "Envoi /cancel pour ne plus parler avec moi.\n\n"
         "Tu veux aller au resteau ou sortir ?",
         reply_markup=ReplyKeyboardMarkup(
@@ -629,6 +631,25 @@ async def afficher_arret(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     prochains_departs = rechercher_prochains_departs(identifiant)
     await update.message.reply_text(prochains_departs)
 
+# Processing commands
+def startCommand (update: Update, context: ContextTypes.DEFAULT_TYPE):
+    context.bot.send_message(chat_id=update.message.chat_id, text='Salut tu veux parler ?')
+    return botai
+def textMessage (update: Update, context: ContextTypes.DEFAULT_TYPE):
+    request = apiai.ApiAI ('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'). text_request () # Token API to Openai
+    request.lang = 'fr' # In which language will the request be sent
+    request.session_id = 'asst_Iz8RaoMwUOPRwAlea2ec8sS3'  # ID Sessions
+    request.query = Update.message.text # We send a request to the AI with a message from the user
+    responseJson = json.loads (request.getresponse (). read (). decode ('utf-8'))
+    response = responseJson ['result'] ['fulfillment'] ['speech'] # We parse JSON and pull out the answer
+    # If there is an answer from the bot - we send it to the user, if not - the bot did not understand it
+    if response:
+        context.send_message (chat_id = Update.message.chat_id, text = response)
+    else:
+        context.send_message (chat_id = Update.message.chat_id, text = 'Je n\'ai pas compris!')
+
+
+
 #FONCTION MAIN
 def main() -> None:
     """Run the bot."""
@@ -642,7 +663,8 @@ def main() -> None:
             CommandHandler("start", start),
             CommandHandler("transport", transport),
             CommandHandler("cancel", cancel),
-            CommandHandler("help", help)
+            CommandHandler("help", help),
+            CommandHandler("bot", startCommand)
         ],
         states={
             STATE_typeSorti: [
@@ -705,7 +727,14 @@ def main() -> None:
                 MessageHandler(filters.LOCATION, recherche_gps),
                 MessageHandler(filters.TEXT, recherche_texte)
             ],
+            botai:[
+                # Permet de lancer la conversationa avec l'agent gpt
+                CommandHandler('start', startCommand),
+                MessageHandler(filters.TEXT, textMessage),
+                # Getting Started for Updates
+                Updater.start_polling(textMessage),
 
+            ],
         },
         #si dans un des etas d'avant mets cancel pour rappeller la fonction d'avant
         fallbacks=[CommandHandler("cancel", cancel)],
