@@ -636,7 +636,7 @@ def startCommand (update: Update, context: ContextTypes.DEFAULT_TYPE):
     context.bot.send_message(chat_id=update.message.chat_id, text='Salut tu veux parler ?')
     return botai
 def textMessage (update: Update, context: ContextTypes.DEFAULT_TYPE):
-    request = apiai.ApiAI ('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'). text_request () # Token API to Openai
+    request = apiai.ApiAI ('clé open ai'). text_request () # Token API to Openai
     request.lang = 'fr' # In which language will the request be sent
     request.session_id = 'asst_Iz8RaoMwUOPRwAlea2ec8sS3'  # ID Sessions
     request.query = Update.message.text # We send a request to the AI with a message from the user
